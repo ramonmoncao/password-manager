@@ -1,103 +1,96 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useEffect, useState } from "react";
+// import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+
+export default function Login() {
+
+  // const supabase = createClient()
+  const router = useRouter()
+  const [checkingSession, setCheckingSession] = useState(true)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+
+  useEffect(() => {
+    const checkSession = async () => {
+      // const { data: { session } } = await supabase.auth.getSession()
+      // if (session?.user) {
+      //   router.replace("/condominios")
+      // } else {
+      //   setCheckingSession(false)
+      // }
+    }
+    checkSession()
+  }, [])
+
+  const login = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setErrorMessage("")
+
+    // try {
+    //   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    //   // throw new Error()
+    //   if (error || !data.user) {
+    //     setErrorMessage("E-mail ou senha inválidos")
+    //     setIsLoading(false)
+    //     return
+    //   }
+
+    //   router.replace("/condominios")
+    // } catch (err) {
+    //   setErrorMessage("Erro inesperado. Tente novamente.")
+    //   setIsLoading(false)
+    // }
+  }
+
+  // Sem essa verificação, ao acessar a raiz LOGADO, ele
+  // por um segundo ainda aparece a tela de login antes de redirecionar para dashboard
+
+  // if (checkingSession) {
+  //   return null
+  // }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="flex h-screen flex-col md:flex-row">
+      <div className="w-full flex items-center justify-center p-6">
+        <div className="w-full max-w-md p-8 shadow-lg rounded-lg"style={{ color: "var(--foreground)" }}>
+          <h2 className="text-2xl flex items-center justify-center font-bold mb-4"style={{ color: "var(--color-primary-1)" }}>Acesse sua conta</h2>
+          {/* <p className="text-gray-500 mb-6">Insira as informações que você usou ao se registrar.</p> */}
+          <form onSubmit={login}>
+            <input
+              type="email"
+              placeholder="Usuário"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 mb-4 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
+              required
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {errorMessage && (
+              <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+            )}
+            <input
+              type="password"
+              placeholder="Senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 mb-4 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <button
+              type="submit"
+              disabled={isLoading}
+
+              className="w-full bg-gradient-to-r from-green-500 to-yellow-500 text-white p-3 rounded-md hover:opacity-90 transition-all disabled:opacity-50"
+            >
+              {isLoading ? "Entrando" : "Entrar"}
+            </button>
+          </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
-  );
+  )
 }
