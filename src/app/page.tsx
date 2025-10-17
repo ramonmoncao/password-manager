@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import Image from "next/image";
 import Button from "@/components/button";
+import Modal from "@/components/modal";
 
 export default function Login() {
   // const supabase = createClient()
@@ -15,6 +16,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const[isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -32,13 +34,14 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
-
+    setIsOpen(true)
     // try {
     //   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     //   // throw new Error()
     //   if (error || !data.user) {
     //     setErrorMessage("E-mail ou senha inválidos")
     //     setIsLoading(false)
+    //     setIsOpen(true)
     //     return
     //   }
 
@@ -83,10 +86,6 @@ export default function Login() {
               className="w-full p-3 mb-4 shadow-lg rounded-md focus:ring-2 focus:ring-white bg-[var(--color-input-1)]"
               required
             />
-            {errorMessage && (
-              <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
-            )}
-
             <label className="flex font-extrabold mt-4 mb-2 text-[var(--color-text-1)]">
               Senha
             </label>
@@ -103,6 +102,18 @@ export default function Login() {
           </form>
         </div>
       </div>
+      {isOpen && (
+        <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        buttons={[
+          {
+            label: "OK",
+            onClick: () => setIsOpen(false),
+            className: "text-white bg-[var(--color-primary-1)]",
+          }
+        ]}
+      >Ops!<br/>Aconteceu um erro: {errorMessage}</Modal>)}
     </div>
   );
 }
