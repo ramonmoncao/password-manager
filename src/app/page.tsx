@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 // import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import Header from "@/components/header";
 
 export default function Login() {
 
@@ -55,40 +56,51 @@ export default function Login() {
   // }
 
   return (
-    <div className="flex h-screen flex-col md:flex-row">
-      <div className="w-full flex items-center justify-center p-6">
-        <div className="w-full max-w-md p-8 shadow-lg rounded-lg"style={{ color: "var(--foreground)" }}>
-          <h2 className="text-2xl flex items-center justify-center font-bold mb-4"style={{ color: "var(--color-primary-1)" }}>Acesse sua conta</h2>
-          {/* <p className="text-gray-500 mb-6">Insira as informações que você usou ao se registrar.</p> */}
-          <form onSubmit={login}>
-            <input
-              type="email"
-              placeholder="Usuário"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 mb-4 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            {errorMessage && (
-              <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
-            )}
-            <input
-              type="password"
-              placeholder="Senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 mb-4 border rounded-md bg-white focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <button
-              type="submit"
-              disabled={isLoading}
-
-              className="w-full bg-gradient-to-r from-green-500 to-yellow-500 text-white p-3 rounded-md hover:opacity-90 transition-all disabled:opacity-50"
-            >
-              {isLoading ? "Entrando" : "Entrar"}
-            </button>
-          </form>
+    <div className="flex flex-col h-screen">
+      <div style={{ backgroundColor: "var(--background)" }}>
+        <Header />
+      </div>
+      <div className="flex h-screen flex-col md:flex-row md:items-stretch md:justify-end">
+        <div className="w-full md:w-auto flex items-start p-6 md:justify-end h-full"
+          style={{ backgroundColor: "var(--background)" }}>
+          <div className="w-full max-w-md p-8" >
+            <h2 className="text-2xl font-extrabold text-center mb-30"
+              style={{ color: "var(--color-primary-1)" }}>Acesse sua conta</h2>
+            {/* <p className="text-gray-500 mb-6">Insira as informações que você usou ao se registrar.</p> */}
+            <form onSubmit={login}>
+              <h2 className="flex font-extrabold"
+                style={{ color: "var(--color-text-1)" }}>Usuário</h2>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 mb-15 shadow-lg rounded-md focus:ring-2 focus:ring-blue-500"
+                style={{ backgroundColor: "var(--color-box-1)" }}
+                required
+              />
+              {errorMessage && (
+                <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+              )}
+              <h2 className="flex font-extrabold"
+                style={{ color: "var(--color-text-1)" }}>Senha</h2>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 mb-20 shadow-lg rounded-md focus:ring-2 focus:ring-blue-500"
+                style={{ backgroundColor: "var(--color-box-1)" }}
+                required
+              />
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full text-white p-3 rounded-md font-extrabold hover:opacity-90 transition-all disabled:opacity-50"
+                style={{ backgroundColor: "var(--color-primary-2)" }}
+              >
+                {isLoading ? "Entrando" : "Entrar"}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
