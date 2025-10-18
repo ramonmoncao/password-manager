@@ -1,12 +1,14 @@
 @import "tailwindcss";
 
+
 :root {
-  --background: #D9D9D9;
+  --background: #ededed;
   --foreground: #171717;
   --color-primary-1: #387C2C;
   --color-primary-2: #408A2E;
   --color-text-1: #5A5F59;
-  --color-box-1: #AEAEAE;
+  --color-input-1: #AEAEAE;
+  --color-box-1:  #d1d1d1;
 }
 
 @theme inline {
@@ -21,19 +23,13 @@
     --background: #404040;
     --foreground: #5A5F59;
     --color-primary-1: #54A533;
-    --color-primary-2: #408A2E;
-    --color-text-1: #D9D9D9;
-    --color-box-1: #AEAEAE;
+    --color-text-1: #FFFFFF;
+    --color-input-1: #AEAEAE;
+    --color-box-1:  #5A5F59
   }
 }
 
 body {
   background-color: var(--background);
-  background-image: url("/bg-login.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
   color: var(--foreground);
-  font-family: Montserrat ExtraBold, -apple-system, BlinkMacSystemFont,
-    "Montserrat", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
