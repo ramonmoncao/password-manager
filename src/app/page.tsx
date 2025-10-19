@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import Header from "@/components/header";
 import Image from "next/image";
 import Button from "@/components/button";
 import Modal from "@/components/modal";
 
 export default function Login() {
-  // const supabase = createClient()
+  const supabase = createClient()
   const router = useRouter();
   const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState("");
@@ -20,12 +19,12 @@ export default function Login() {
 
   useEffect(() => {
     const checkSession = async () => {
-      // const { data: { session } } = await supabase.auth.getSession()
-      // if (session?.user) {
-      //   router.replace("/condominios")
-      // } else {
-      //   setCheckingSession(false)
-      // }
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        router.replace("/projects")
+      } else {
+        setCheckingSession(false)
+      }
     };
     checkSession();
   }, []);
@@ -34,30 +33,25 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
-    setIsOpen(true)
-    // try {
-    //   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    //   // throw new Error()
-    //   if (error || !data.user) {
-    //     setErrorMessage("E-mail ou senha inválidos")
-    //     setIsLoading(false)
-    //     setIsOpen(true)
-    //     return
-    //   }
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error || !data.user) {
+        setErrorMessage("E-mail ou senha inválidos")
+        setIsLoading(false)
+        setIsOpen(true)
+        return
+      }
 
-    //   router.replace("/condominios")
-    // } catch (err) {
-    //   setErrorMessage("Erro inesperado. Tente novamente.")
-    //   setIsLoading(false)
-    // }
+      router.replace("/projects")
+    } catch (err) {
+      setErrorMessage("Erro inesperado. Tente novamente.")
+      setIsLoading(false)
+    }
   };
 
-  // Sem essa verificação, ao acessar a raiz LOGADO, ele
-  // por um segundo ainda aparece a tela de login antes de redirecionar para dashboard
-
-  // if (checkingSession) {
-  //   return null
-  // }
+  if (checkingSession) {
+    return null
+  }
 
   return (
     <div className="flex h-screen flex-col md:flex-row">

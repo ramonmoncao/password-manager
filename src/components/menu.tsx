@@ -12,10 +12,12 @@ import {
   LockIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Menu() {
   const pathname = usePathname();
   const router = useRouter();
+  const supabase = createClient();
   const [loading, setLoading] = useState(false);
 
   const nav = [
@@ -32,6 +34,7 @@ export default function Menu() {
   const handleLogout = async () => {
     try {
       setLoading(true);
+      await supabase.auth.signOut();
       router.replace("/");
       router.refresh();
     } finally {
