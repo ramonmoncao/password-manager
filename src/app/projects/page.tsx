@@ -40,9 +40,7 @@ export default function Projects() {
   };
 
   return (
-    <>
-      <Menu />
-      <div className="ml-60 flex h-screen">
+      <div className=" flex h-screen">
         <ProjectList
           projects={projects}
           search={search}
@@ -102,6 +100,5 @@ export default function Projects() {
           )}
         </div>
       </div>
-    </>
   );
 }
