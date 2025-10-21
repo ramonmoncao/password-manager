@@ -8,23 +8,25 @@ import Button from "@/components/button";
 import Modal from "@/components/modal";
 
 export default function Login() {
-  const supabase = createClient()
+  const supabase = createClient();
   const router = useRouter();
   const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const[isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session?.user) {
         router.replace("/projects");
         router.refresh();
       } else {
-        setCheckingSession(false)
+        setCheckingSession(false);
       }
     };
     checkSession();
@@ -35,24 +37,54 @@ export default function Login() {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       if (error || !data.user) {
-        setErrorMessage("E-mail ou senha inválidos")
-        setIsLoading(false)
-        setIsOpen(true)
-        return
+        setErrorMessage("E-mail ou senha inválidos");
+        setIsLoading(false);
+        setIsOpen(true);
+        return;
       }
 
-      router.replace("/projects")
+      router.replace("/projects");
       router.refresh();
     } catch (err) {
-      setErrorMessage("Erro inesperado. Tente novamente.")
-      setIsLoading(false)
+      setErrorMessage("Erro inesperado. Tente novamente.");
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        setErrorMessage("Erro ao tentar entrar com Google.");
+        setIsOpen(true);
+        setIsLoading(false);
+        return;
+      }
+    } catch (err) {
+      setErrorMessage("Erro inesperado. Tente novamente.");
+      setIsOpen(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   if (checkingSession) {
-    return null
+    return null;
   }
 
   return (
@@ -95,21 +127,29 @@ export default function Login() {
             <Button type="submit" isLoading={isLoading}>
               Entrar
             </Button>
+            <Button onClick={loginWithGoogle} isLoading={isLoading} color="black" className="mt-10">
+              Entre com o Google
+            </Button>
           </form>
         </div>
       </div>
       {isOpen && (
         <Modal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        buttons={[
-          {
-            label: "OK",
-            onClick: () => setIsOpen(false),
-            className: "text-white bg-[var(--color-primary-1)]",
-          }
-        ]}
-      >Ops!<br/>Aconteceu um erro: {errorMessage}</Modal>)}
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          buttons={[
+            {
+              label: "OK",
+              onClick: () => setIsOpen(false),
+              className: "text-white bg-[var(--color-primary-1)]",
+            },
+          ]}
+        >
+          Ops!
+          <br />
+          Aconteceu um erro: {errorMessage}
+        </Modal>
+      )}
     </div>
   );
 }
