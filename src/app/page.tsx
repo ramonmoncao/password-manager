@@ -21,7 +21,8 @@ export default function Login() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
-        router.replace("/projects")
+        router.replace("/projects");
+        router.refresh();
       } else {
         setCheckingSession(false)
       }
@@ -43,6 +44,7 @@ export default function Login() {
       }
 
       router.replace("/projects")
+      router.refresh();
     } catch (err) {
       setErrorMessage("Erro inesperado. Tente novamente.")
       setIsLoading(false)

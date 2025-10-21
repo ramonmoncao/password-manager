@@ -21,12 +21,28 @@ export default function Menu() {
   const [loading, setLoading] = useState(false);
 
   const nav = [
-    { href: "/projects", label: "Meus Projetos", icon: FolderKanban },
-    { href: "/request-acess", label: "Solicitar Acesso", icon: LockIcon },
-    { href: "/requests", label: "Gerenciar Solicitações", icon: UserCheck },
-    { href: "/my-requests", label: "Minhas Solicitações", icon: ClipboardList },
-    { href: "/request-user", label: "Solicitar Usuário", icon: UserPlus },
-    { href: "/request-project", label: "Solicitar Projeto", icon: FilePlus2 },
+    { href: "/projects", label: 
+      "Meus Projetos", 
+      icon: FolderKanban },
+    { href: "/request/access", 
+      label: "Solicitar Acesso", 
+      icon: LockIcon },
+    {
+      href: "/request/manager",
+      label: "Gerenciar Solicitações",
+      icon: UserCheck,
+    },
+    {
+      href: "/request/my-requests",
+      label: "Minhas Solicitações",
+      icon: ClipboardList,
+    },
+    { href: "/request/user",
+      label: "Solicitar Usuário",
+      icon: UserPlus },
+    { href: "/request/project", 
+      label: "Solicitar Projeto", 
+      icon: FilePlus2 },
   ];
 
   const isActive = (href: string) => pathname?.startsWith(href);
