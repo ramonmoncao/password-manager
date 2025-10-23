@@ -12,6 +12,7 @@ import {
   updatePassword,
 } from "@/services/projects.service";
 import Modal from "@/components/modal";
+import { decrypt } from "@/utils/password-crypto";
 
 interface Project {
   id: number;
@@ -151,7 +152,7 @@ export default function Projects() {
                 <label className="font-semibold mb-1 text-xl">Senha:</label>
                 <div className="flex items-center bg-[var(--color-box-1)] rounded-md p-2 gap-2">
                   <span className="font-mono truncate w-full">
-                    {showPassword ? selectedProject.password : "•".repeat(40)}
+                    {showPassword ? selectedProject.password: "•".repeat(40)}
                   </span>
                   <button onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
