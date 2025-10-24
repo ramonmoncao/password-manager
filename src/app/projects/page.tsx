@@ -124,7 +124,7 @@ export default function Projects() {
         }}
       />
 
-      <div className="flex-1 bg-[var(--color-box-2)] rounded-t-3xl p-10 ml-10 mr-10 flex justify-center">
+      <div className="flex-1 bg-[var(--color-box-2)] rounded-t-3xl shadow-md p-10 ml-6 mr-6 flex justify-center">
         {selectedProject ? (
           <div className="w-full max-w-xl">
             <h2 className="text-3xl font-semibold text-[var(--color-primary-1)] mb-6 text-center">

@@ -4,6 +4,14 @@ import { decrypt, encrypt } from "@/utils/password-crypto";
 import { generateSecurePassword } from "@/utils/password-generator";
 import { createClient } from "@/utils/supabase/server";
 
+export interface IProject{
+  id: number;
+  name: string;
+  user: string;
+  password: string;
+  password_changed_at: string;
+}
+
 export const getProjects = async () => {
   const supabase = await createClient();
   const { data, error } = await supabase

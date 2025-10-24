@@ -99,7 +99,7 @@ export default function Login() {
       </div>
       <div className="flex w-full md:w-1/2  justify-center p-6">
         <div className="w-full max-w-md p-8 rounded-2xl md:shadow-none md:bg-transparent shadow-2xl bg-[var(--color-box-1)]">
-          <h2 className="text-[var(--color-primary-1)] text-xl font-extrabold text-center mb-8 ">
+          <h2 className="text-[var(--color-primary-1)] text-2xl font-extrabold text-center mb-8 ">
             Acesse sua conta
           </h2>
 
