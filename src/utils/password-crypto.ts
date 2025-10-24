@@ -1,8 +1,5 @@
 import crypto from "crypto";
 const algorithm = "aes-256-cbc";
-//const key = Buffer.from(process.env.ENCRYPTION_KEY!, "base64");
-//const iv = Buffer.from(process.env.ENCRYPTION_IV!, "base64");
-
 export function encrypt(text: string, keyBase64: string, ivBase64: string): string {
   const key = Buffer.from(keyBase64, "base64"); 
   const iv = Buffer.from(ivBase64, "base64");
