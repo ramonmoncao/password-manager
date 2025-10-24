@@ -45,7 +45,7 @@ const Notification: React.FC<NotificationProps> = ({
       <div className={`px-4 py-3 text-white font-semibold ${bgColor}`}>
         {message}
       </div>
-      <div className="h-1 bg-[var(--color-primary-2)]">
+      <div className="h-1 bg-gray-500">
         <div
           className="h-1 bg-white transition-all"
           style={{ width: `${progress}%` }}
