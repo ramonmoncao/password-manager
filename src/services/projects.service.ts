@@ -3,8 +3,9 @@
 import { decrypt, encrypt } from "@/utils/password-crypto";
 import { generateSecurePassword } from "@/utils/password-generator";
 import { createClient } from "@/utils/supabase/server";
+import { addDays } from "date-fns";
 
-export interface IProject{
+export interface IProject {
   id: number;
   name: string;
   user: string;
@@ -44,6 +45,7 @@ export const updatePassword = async (id: number) => {
     .update({
       password: encrypt(newPassword, key, iv),
       password_changed_at: new Date().toISOString(),
+      next_change: addDays(new Date(), 50).toISOString(),
     })
     .eq("id", id)
     .select()
@@ -51,4 +53,25 @@ export const updatePassword = async (id: number) => {
 
   if (error) throw new Error(error.message);
   return data ?? [];
+};
+
+export const getProjectByGroup = async (id: number) => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("group_id", id)
+    .order("id");
+
+  if (error) throw new Error(error.message);
+
+  const key = process.env.ENCRYPTION_KEY!;
+  const iv = process.env.ENCRYPTION_IV!;
+
+  const decryptedData = data.map((project) => ({
+    ...project,
+    password: project.password ? decrypt(project.password, key, iv) : null,
+  }));
+
+  return decryptedData ?? [];
 };

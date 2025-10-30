@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-interface NotificationProps {
+export interface NotificationProps {
   message: string;
   type?: "success" | "error" | "info";
   duration?: number; 
