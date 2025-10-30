@@ -1,14 +1,15 @@
+import { IProjectGroup } from "@/services/project-group.service";
 import { IProject } from "@/services/projects.service";
 import { Search } from "lucide-react";
 import React from "react";
 
 interface ProjectListProps {
-  projects: IProject[];
+  projects: IProjectGroup[];
   search: string;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
   isLoading: boolean;
-  selectedProject: IProject | null;
-  setSelectedProject: React.Dispatch<React.SetStateAction<IProject | null>>;
+  selectedProject: IProjectGroup | null;
+  setSelectedProject: React.Dispatch<React.SetStateAction<IProjectGroup | null>>;
 }
 
 const ProjectList: React.FC<ProjectListProps> = ({

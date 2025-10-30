@@ -6,14 +6,10 @@ import { ChevronDown } from "lucide-react";
 import { getProjects, IProject } from "@/services/projects.service";
 import { createAccessRequest } from "@/services/access-request.service";
 import { createClient } from "@/utils/supabase/client";
-import Notification from "@/components/notification";
+import Notification, { NotificationProps } from "@/components/notification";
+import { getProjectGroups } from "@/services/project-group.service";
 
-interface NotificationItem {
-  id: number;
-  message: string;
-  type: "success" | "error" | "info";
-  duration: number;
-}
+
 
 export default function AccessRequest() {
   const supabase = createClient();
@@ -26,11 +22,10 @@ export default function AccessRequest() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [projects, setProjects] = useState<IProject[]>([]);
   const [isLoading, setLoading] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [notifications, setNotifications] = useState<NotificationProps[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Pega usuário logado
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -39,12 +34,11 @@ export default function AccessRequest() {
     getUser();
   }, []);
 
-  // Busca projetos
   useEffect(() => {
     const getProjectsList = async () => {
       try {
         setLoading(true);
-        const data = await getProjects();
+        const data = await getProjectGroups();
         setProjects(data);
       } catch (err: any) {
         showNotification(err.message || String(err), "error");
