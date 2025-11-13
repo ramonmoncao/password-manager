@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 export default function MyRequests() {
   const supabase = createClient();
   const [user, setUser] = useState<any>(null);
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [requests, setRequests] = useState<IAccessRequest[] | []>([]);
   const [notifications, setNotifications] = useState<NotificationProps[]>([]);
