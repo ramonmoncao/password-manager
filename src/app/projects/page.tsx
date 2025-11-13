@@ -1,22 +1,25 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
+import { Eye, EyeOff, Copy } from "lucide-react";
+
 import Menu from "@/components/menu";
 import ProjectList from "@/components/project-list";
-import { useEffect, useState } from "react";
-import { Eye, EyeOff, Copy } from "lucide-react";
 import Button from "@/components/button";
 import Notification from "@/components/notification";
 import Modal from "@/components/modal";
+
 import {
   getProjectByGroup,
   updatePassword,
   IProject,
 } from "@/services/projects.service";
 import {
-  getProjectGroups,
+  getUserProjectGroups,
   IProjectGroup,
   updateAllPasswords,
 } from "@/services/project-group.service";
+import { createClient } from "@/utils/supabase/client";
 
 interface NotificationItem {
   id: number;
@@ -26,31 +29,55 @@ interface NotificationItem {
 }
 
 export default function Projects() {
-  const [search, setSearch] = useState<string>("");
-  const [selectedProjectGroup, setSelectedProjectGroup] = useState<IProjectGroup | null>(null);
-  const [projectsInGroup, setProjectsInGroup] = useState<IProject[]>([]);
+  const supabase = createClient();
+
+  const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [search, setSearch] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState<IProjectGroup | null>(null);
+  const [projects, setProjects] = useState<IProject[]>([]);
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
   const [showUsername, setShowUsername] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [projectGroup, setProjectGroup] = useState<IProjectGroup[]>([]);
+  const [groups, setGroups] = useState<IProjectGroup[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(true);
-  const [isLoadingInBox, setLoadingInBox] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isBoxLoading, setBoxLoading] = useState(false);
+  const [isConfirmOpen, setConfirmOpen] = useState(false);
   const [projectToUpdate, setProjectToUpdate] = useState<IProject | null>(null);
-  const [projectGroupToUpdate, setProjectGroupToUpdate] = useState<IProjectGroup | null>(null);
+  const [groupToUpdate, setGroupToUpdate] = useState<IProjectGroup | null>(null);
 
+  // 🔹 Recupera usuário do Supabase
   useEffect(() => {
-    const getProjectsList = async () => {
+    const fetchUserAndRole = async () => {
+      const { data } = await supabase.auth.getUser();
+      const currentUser = data?.user;
+      setUser(currentUser);
+
+      if (currentUser) {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .single();
+
+        if (!error && profile) setUserProfile(profile);
+      }
+    };
+    fetchUserAndRole();
+  }, [supabase]);
+
+  // 🔹 Busca grupos de projetos do usuário
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchGroups = async () => {
       try {
         setLoading(true);
-        const data = await getProjectGroups();
-        if ((data as any)?.error) {
-          setError((data as any).error);
-          return;
-        }
-        setProjectGroup(data);
+        const data = await getUserProjectGroups(user.id);
+        if ((data as any)?.error) throw new Error((data as any).error);
+        setGroups(data);
       } catch (err: any) {
         setError(err.message || String(err));
       } finally {
@@ -58,118 +85,132 @@ export default function Projects() {
       }
     };
 
-    getProjectsList();
-  }, []);
+    fetchGroups();
+  }, [user]);
 
-  const showNotification = (
-    message: string,
-    type: "success" | "error" | "info",
-    duration = 4000
-  ) => {
-    const id = Date.now();
-    setNotifications((prev) => [...prev, { id, message, type, duration }]);
+  // 🔹 Exibir notificações
+  const showNotification = useCallback(
+    (message: string, type: "success" | "error" | "info", duration = 4000) => {
+      const id = Date.now();
+      setNotifications((prev) => [...prev, { id, message, type, duration }]);
+      setTimeout(() => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+      }, duration);
+    },
+    []
+  );
 
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, duration);
-  };
-
-  const getProjects = async (groupId: number) => {
+  // 🔹 Buscar projetos do grupo
+  const getProjects = useCallback(async (groupId: number) => {
     try {
-      setLoadingInBox(true);
+      setBoxLoading(true);
       const data = await getProjectByGroup(groupId);
-      if ((data as any)?.error) {
-        setError((data as any).error);
-        return;
-      }
-      setProjectsInGroup(data);
-      setSelectedProject(null); // limpa seleção anterior
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setProjects(data);
+      setSelectedProject(null);
     } catch (err: any) {
       setError(err.message || String(err));
     } finally {
-      setLoadingInBox(false);
+      setBoxLoading(false);
     }
-  };
+  }, []);
 
-  const copyUsername = () => {
-    if (selectedProject) {
-      navigator.clipboard.writeText(selectedProject.user);
-      showNotification("Usuário copiado!", "success");
-    }
-  };
+  // 🔹 Copiar texto (usuário/senha)
+  const handleCopy = useCallback(
+    (text: string, label: string) => {
+      navigator.clipboard.writeText(text);
+      showNotification(`${label} copiado!`, "success");
+    },
+    [showNotification]
+  );
 
-  const copyPassword = () => {
-    if (selectedProject) {
-      navigator.clipboard.writeText(selectedProject.password);
-      showNotification("Senha copiada!", "success");
-    }
-  };
+  // 🔹 Atualizar senha de 1 projeto
+  const handleUpdate = useCallback(
+    async (id: number) => {
+      try {
+        await updatePassword(id);
+        showNotification("Senha atualizada com sucesso!", "success");
+        const updated = await getProjectByGroup(selectedGroup!.id);
+        setProjects(updated);
+        setSelectedProject(updated.find((p) => p.id === id) || null);
+      } catch {
+        showNotification("Erro ao atualizar senha", "error");
+      }
+    },
+    [selectedGroup, showNotification]
+  );
 
-  const handleUpdate = async (id: number) => {
-    try {
-      await updatePassword(id);
-      showNotification("Senha atualizada com sucesso!", "success");
+  // 🔹 Atualizar senhas de todos os projetos do grupo
+  const handleAllUpdate = useCallback(
+    async (id: number) => {
+      try {
+        await updateAllPasswords(id);
+        showNotification("Senhas atualizadas com sucesso!", "success");
+        const updated = await getProjectByGroup(id);
+        setProjects(updated);
+      } catch {
+        showNotification("Erro ao atualizar senha", "error");
+      }
+    },
+    [showNotification]
+  );
 
-      const updatedProjects = await getProjectByGroup(selectedProjectGroup!.id);
-      setProjectsInGroup(updatedProjects);
-
-      const updatedProject = updatedProjects.find((p) => p.id === id);
-      if (updatedProject) setSelectedProject(updatedProject);
-    } catch (err) {
-      console.error("Erro ao atualizar senha:", err);
-      showNotification("Erro ao atualizar senha", "error");
-    }
-  };
-
-  const handleAllUpdate = async (id: number) => {
-    try {
-      await updateAllPasswords(id);
-      showNotification("Senhas atualizadas com sucesso!", "success");
-
-      const updatedProjects = await getProjectByGroup(id);
-      setProjectsInGroup(updatedProjects);
-    } catch (err) {
-      console.error("Erro ao atualizar senha:", err);
-      showNotification("Erro ao atualizar senha", "error");
-    }
-  };
-
-  const getDate = (isoDate: string) => {
-    const date = new Date(isoDate);
-    return date.toLocaleString("pt-BR");
-  };
+  const getDate = (iso: string) => new Date(iso).toLocaleString("pt-BR");
 
   return (
     <div className="flex w-full">
       <ProjectList
         isLoading={isLoading}
-        projects={projectGroup}
+        projects={groups}
         search={search}
         setSearch={setSearch}
-        selectedProject={selectedProjectGroup}
-        setSelectedProject={(project) => {
-          setSelectedProjectGroup(project);
+        selectedProject={selectedGroup}
+        setSelectedProject={(group) => {
+          setSelectedGroup(group);
           setShowUsername(false);
           setShowPassword(false);
-          if (project) getProjects(project.id);
+          if (group) getProjects(group.id);
         }}
       />
 
-      <div className="flex-shrink-0 bg-[var(--color-box-2)] rounded-t-3xl min-h-screen shadow-md p-10 ml-6 mr-6 flex flex-col justify-start w-4xl">
-        {isLoadingInBox ? (
+      <div className="flex-shrink-0 bg-[var(--color-box-2)] rounded-t-3xl min-h-screen shadow-md p-10 mx-6 flex flex-col justify-start w-4xl">
+        {isBoxLoading ? (
           <div className="flex flex-col items-center justify-center h-full py-10 text-[var(--color-text-1)]">
             <div className="w-6 h-6 border-4 border-[var(--color-primary-2)] border-t-transparent rounded-full animate-spin mb-3" />
             <p className="text-sm">Carregando projetos...</p>
           </div>
-        ) : projectsInGroup.length > 0 ? (
+        ) : projects.length > 0 ? (
           <div className="w-full">
             <h2 className="text-3xl font-semibold text-[var(--color-primary-1)] mb-6 text-center">
-              {selectedProjectGroup?.name}
+              {selectedGroup?.name}
             </h2>
 
             <div className="p-6 rounded-lg w-full text-[var(--color-text-1)] space-y-6">
-              {projectsInGroup.map((project) => {
+              {projects.map((project) => {
                 const isSelected = selectedProject?.id === project.id;
+                const renderField = (
+                  label: string,
+                  value: string,
+                  show: boolean,
+                  setShow: (v: boolean) => void,
+                  copyLabel: string
+                ) => (
+                  <div className="flex flex-col">
+                    <label className="font-semibold mb-1 text-lg">{label}</label>
+                    <div className="flex items-center bg-[var(--color-box-2)] rounded-md p-2 gap-2">
+                      <span className="font-mono truncate w-full">
+                        {show ? value : "•".repeat(40)}
+                      </span>
+                      <button onClick={() => setShow(!show)}>
+                        {show ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                      <button onClick={() => handleCopy(value, copyLabel)}>
+                        <Copy size={20} />
+                      </button>
+                    </div>
+                  </div>
+                );
+
                 return (
                   <div
                     key={project.id}
@@ -177,17 +218,11 @@ export default function Projects() {
                   >
                     <div className="flex justify-between items-center">
                       <h3 className="font-semibold text-xl w-md">{project.name}</h3>
-                      <Button 
-                      className="w-md"
-                        onClick={() => {
-                          if (isSelected) {
-                            setSelectedProject(null);
-                          } else {
-                            setSelectedProject(project);
-                            setShowUsername(false);
-                            setShowPassword(false);
-                          }
-                        }}
+                      <Button
+                        className="w-md"
+                        onClick={() =>
+                          setSelectedProject(isSelected ? null : project)
+                        }
                       >
                         {isSelected ? "Fechar" : "Ver Detalhes"}
                       </Button>
@@ -195,45 +230,21 @@ export default function Projects() {
 
                     {isSelected && (
                       <div className="mt-4 space-y-4 border-t border-[var(--color-text-1)] pt-4">
-                        <div className="flex flex-col">
-                          <label className="font-bold mb-1 text-lg">Usuário:</label>
-                          <div className="flex items-center bg-[var(--color-box-2)] rounded-md p-2 gap-2">
-                            <span className="font-mono truncate w-full">
-                              {showUsername ? selectedProject.user : "•".repeat(40)}
-                            </span>
-                            <button onClick={() => setShowUsername(!showUsername)}>
-                              {showUsername ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </button>
-                            <button onClick={copyUsername}>
-                              <Copy size={20} />
-                            </button>
-                          </div>
-                        </div>
+                        {renderField("Usuário:", project.user, showUsername, setShowUsername, "Usuário")}
+                        {renderField("Senha:", project.password, showPassword, setShowPassword, "Senha")}
 
-                        <div className="flex flex-col">
-                          <label className="font-semibold mb-1 text-lg">Senha:</label>
-                          <div className="flex items-center bg-[var(--color-box-2)] rounded-md p-2 gap-2">
-                            <span className="font-mono truncate w-full">
-                              {showPassword ? selectedProject.password : "•".repeat(40)}
-                            </span>
-                            <button onClick={() => setShowPassword(!showPassword)}>
-                              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </button>
-                            <button onClick={copyPassword}>
-                              <Copy size={20} />
-                            </button>
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={() => {
-                            setProjectToUpdate(selectedProject);
-                            setIsConfirmOpen(true);
-                          }}
-                          className="mt-4"
-                        >
-                          Atualizar Senha
-                        </Button>
+                        {/* 🔹 Botão visível apenas se user.role !== "USER" */}
+                        {userProfile?.role !== "USER" && (
+                          <Button
+                            onClick={() => {
+                              setProjectToUpdate(selectedProject);
+                              setConfirmOpen(true);
+                            }}
+                            className="mt-4"
+                          >
+                            Atualizar Senha
+                          </Button>
+                        )}
 
                         <p className="text-center mt-2 text-sm opacity-80">
                           Senha atualizada em: {getDate(selectedProject.password_changed_at)}
@@ -244,15 +255,18 @@ export default function Projects() {
                 );
               })}
 
-              <Button
-                onClick={() => {
-                  setProjectGroupToUpdate(selectedProjectGroup);
-                  setIsConfirmOpen(true);
-                }}
-                className="mt-6"
-              >
-                Atualizar Todas as Senhas
-              </Button>
+              {/* 🔹 Botão "Atualizar Todas" visível apenas se user.role !== "USER" */}
+              {userProfile?.role !== "USER" && (
+                <Button
+                  onClick={() => {
+                    setGroupToUpdate(selectedGroup);
+                    setConfirmOpen(true);
+                  }}
+                  className="mt-6"
+                >
+                  Atualizar Todas as Senhas
+                </Button>
+              )}
             </div>
           </div>
         ) : (
@@ -261,9 +275,10 @@ export default function Projects() {
           </div>
         )}
 
+        {/* 🔹 Modal de confirmação */}
         <Modal
           isOpen={isConfirmOpen}
-          onClose={() => setIsConfirmOpen(false)}
+          onClose={() => setConfirmOpen(false)}
           buttons={[
             {
               label: "Confirmar",
@@ -272,37 +287,32 @@ export default function Projects() {
                   await handleUpdate(projectToUpdate.id);
                   setProjectToUpdate(null);
                 }
-                if (projectGroupToUpdate) {
-                  await handleAllUpdate(projectGroupToUpdate.id);
-                  setProjectGroupToUpdate(null);
+                if (groupToUpdate) {
+                  await handleAllUpdate(groupToUpdate.id);
+                  setGroupToUpdate(null);
                 }
-                setIsConfirmOpen(false);
+                setConfirmOpen(false);
               },
               className: "bg-transparent cursor-pointer",
             },
             {
               label: "Cancelar",
-              onClick: () => setIsConfirmOpen(false),
+              onClick: () => setConfirmOpen(false),
               className: "bg-red-500 text-white cursor-pointer",
             },
           ]}
         >
           <p className="text-center text-lg">
             Tem certeza que deseja atualizar a senha de:{" "}
-            <b>{projectGroupToUpdate?.name}{projectToUpdate?.name}</b>?
+            <b>{groupToUpdate?.name || projectToUpdate?.name}</b>?
           </p>
         </Modal>
       </div>
 
-      {/* Notificações empilháveis */}
+      {/* 🔹 Notificações */}
       <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-50">
         {notifications.map((n) => (
-          <Notification
-            key={n.id}
-            message={n.message}
-            type={n.type}
-            duration={n.duration}
-          />
+          <Notification key={n.id} {...n} />
         ))}
       </div>
     </div>
