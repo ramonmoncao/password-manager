@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
+import { sendEmailById } from "./send-email.service";
 
 export interface IAccessRequest {
   id: number;
@@ -37,7 +38,7 @@ export const getAccessRequestByUserId = async (id: string) => {
 
 export const createAccessRequest = async (request: Partial<IAccessRequest>) => {
   const supabase = await createClient();
-  const { data: existing, error: selectError } = await supabase
+  const { data: existingRequest, error: requestError } = await supabase
     .from("access_request")
     .select("*")
     .eq("id_user", request.id_user)
@@ -45,12 +46,28 @@ export const createAccessRequest = async (request: Partial<IAccessRequest>) => {
     .eq("active", true)
     .order("id");
 
+  const { data: existingAcess, error: acessError } = await supabase
+    .from("users_projects")
+    .select("*")
+    .eq("user_id", request.id_user)
+    .eq("project_id", request.id_project)
+    .eq("active", true)
+
   const {data: project} = await supabase.from("project_group")
   .select("*")
   .eq("id", request.id_project)
   .single();
 
-  if (existing && existing.length > 0) throw new Error("Solicitação já existente");
+  if (existingRequest && existingRequest.length > 0) throw new Error("Solicitação já existente");
+  if(existingAcess && existingAcess.length > 0) throw new Error("Acesso já existente");
+
+  const adminId : string = project.id_admin;
+  sendEmailById({
+    id: adminId,
+    subject: "Solicitação de acesso",
+    text: "Nova Solicitação de acesso"
+  });
+
   const { data, error } = await supabase
     .from("access_request")
     .insert([

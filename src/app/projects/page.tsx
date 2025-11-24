@@ -68,7 +68,6 @@ export default function Projects() {
     fetchUserAndRole();
   }, [supabase]);
 
-  // 🔹 Busca grupos de projetos do usuário
   useEffect(() => {
     if (!user) return;
 

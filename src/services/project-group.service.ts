@@ -5,6 +5,8 @@ import { decrypt, encrypt } from "@/utils/password-crypto";
 import { generateSecurePassword } from "@/utils/password-generator";
 import { createClient } from "@/utils/supabase/server";
 import { addDays } from "date-fns";
+import { da } from "date-fns/locale";
+import { sendAllEmailsByGroupId } from "./send-email.service";
 
 export interface IProjectGroup {
   id: number;
@@ -24,52 +26,51 @@ export const getProjectGroups = async () => {
   return data ?? [];
 };
 
-export async function getUserProjectGroups(userId: string): Promise<IProjectGroup[]> {
+export async function getUserProjectGroups(
+  userId: string
+): Promise<IProjectGroup[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('users_projects')
-    .select(`
-      project_id,
-      projects (
-        id,
-        name,
-        user,
-        password,
-        created_at,
-        group_id,
-        project_group:group_id (
-          id,
-          name
-        )
-      )
-    `)
-    .eq('user_id', userId)
-    .eq('active', true)
 
-  if (error) {
-    console.error('Erro ao buscar grupos de projeto:', error)
-    return []
+  const {
+  data: { user },
+} = await supabase.auth.getUser();
+  console.log("DATA: ", user);
+
+  const { data: userGroups, error } = await supabase
+    .from("users_projects")
+    .select("project_id")
+    .eq("user_id", userId)
+    .eq("active", true);
+
+  if (error) throw new Error(error.message);
+
+  if (!userGroups || userGroups.length === 0) return [];
+
+  const groupIds = userGroups.map((g) => g.project_id);
+
+  const { data: groups } = await supabase
+    .from("project_group")
+    .select("id, name")
+    .in("id", groupIds);
+
+  if (!groups) return [];
+
+  const result: IProjectGroup[] = [];
+
+  for (const group of groups) {
+    const { data: projects } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("group_id", group.id);
+
+    result.push({
+      id: group.id,
+      name: group.name,
+      projects: projects || [],
+    });
   }
-  const groupsMap = new Map<number, IProjectGroup>()
 
-  data?.forEach(entry => {
-    const project = entry.projects as IProject
-    const group = entry.projects?.project_group
-
-    if (!group) return
-
-    if (!groupsMap.has(group.id)) {
-      groupsMap.set(group.id, {
-        id: group.id,
-        name: group.name,
-        projects: []
-      })
-    }
-
-    groupsMap.get(group.id)!.projects.push(project)
-  })
-
-  return Array.from(groupsMap.values())
+  return result;
 }
 
 export const updateAllPasswords = async (group_id: number) => {
@@ -100,11 +101,11 @@ export const updateAllPasswords = async (group_id: number) => {
       .eq("id", project.id)
       .select()
       .single();
-
     if (error) throw new Error(error.message);
     return data;
   });
-
+  const where = "Grupo " + group_id
+  sendAllEmailsByGroupId(group_id, where)
   const results = await Promise.all(updates);
 
   return results;

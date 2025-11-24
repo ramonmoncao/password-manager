@@ -42,6 +42,7 @@ export async function getOrCreateUserProfile(user: any) {
       {
         id: user.id,
         name,
+        email: user.email,
         role: "USER",
       },
     ])
