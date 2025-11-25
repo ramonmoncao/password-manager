@@ -68,7 +68,7 @@ export default function MyRequests() {
         <table className="min-w-full divide-y">
           <thead className="bg-[var(--color-primary-1)]">
             <tr>
-              <th className="px-4 pt-3 whitespace-nowrap text-left text-sm text-white w-12">
+              <th className="px-4 py-3 whitespace-nowrap text-left text-sm text-white w-12">
                 #
               </th>
               <th className="px-4 py-3 whitespace-nowrap text-left text-sm text-white">
@@ -91,7 +91,7 @@ export default function MyRequests() {
           <tbody className="divide-y divide-gray-200 bg-[var(--color-box-2)]">
             {isLoading ? (
               <tr>
-                <td className="px-4 py-3 text-center text-gray-500" colSpan={6}>
+                <td className="px-4 py-3 text-center text-[var(--color-text-1)]" colSpan={6}>
                   Carregando Solicitações...
                 </td>
               </tr>
@@ -103,14 +103,14 @@ export default function MyRequests() {
               </tr>
             ) : requests.length === 0 ? (
               <tr>
-                <td className="px-4 py-3 text-center text-gray-700" colSpan={6}>
-                  Nenhuma Solicitação encontrada.
+                <td className="px-4 py-3 text-center text-[var(--color-text-1)]" colSpan={6}>
+                  Nenhuma solicitação encontrada.
                 </td>
               </tr>
             ) : (
               requests.map((request, index) => (
                 <tr key={request.id} className="hover:bg-[var(--color-box-1)]">
-                  <td className="px-4 pt-3 whitespace-nowrap text-sm text-[var(--color-text-1)]">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text-1)]">
                     {index + 1}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text-1)]">

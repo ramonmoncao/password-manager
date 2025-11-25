@@ -104,7 +104,7 @@ export default function Menu() {
           ].join(" ")}
         >
           <LogOut className="h-4 w-4 text-[var(--color-text-3)] flex-shrink-0" />
-          <span className="flex-1">{loading ? "Saindo..." : "Sair"}</span>
+          <span className="">{loading ? "Saindo..." : "Sair"}</span>
         </button>
         <div className="h-px bg-[var(--color-border)] my-3" />
       </div>

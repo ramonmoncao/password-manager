@@ -88,15 +88,15 @@ export default function ManageRequest() {
     }
   };
 
-const handleAction = async (request: IAccessRequest) => {
-  if (action === "aceitar") {
-    await handleAccept(request.id);
-  }
-  if (action === "recusar") {
-    await handleReject(request.id);
-  }
-  setSelectedRequest(null);
-};
+  const handleAction = async (request: IAccessRequest) => {
+    if (action === "aceitar") {
+      await handleAccept(request.id);
+    }
+    if (action === "recusar") {
+      await handleReject(request.id);
+    }
+    setSelectedRequest(null);
+  };
 
   return (
     <div className="flex-1 bg-[var(--color-box-3)] shadow-md h-full rounded-tr-3xl p-10 mr-6 flex justify-center items-start">
@@ -108,7 +108,7 @@ const handleAction = async (request: IAccessRequest) => {
         <table className="min-w-full divide-y">
           <thead className="bg-[var(--color-primary-1)]">
             <tr>
-              <th className="px-4 pt-3 whitespace-nowrap text-left text-sm text-white w-12">
+              <th className="px-4 py-3 whitespace-nowrap text-left text-sm text-white">
                 #
               </th>
               <th className="px-4 py-3 whitespace-nowrap text-left text-sm text-white">
@@ -126,7 +126,7 @@ const handleAction = async (request: IAccessRequest) => {
               <th className="px-4 py-3 whitespace-nowrap text-left text-sm text-white">
                 Razão
               </th>
-              <th className="px-4 py-3 whitespace-nowrap text-left text-sm text-white">
+              <th className="px-6 py-3 whitespace-nowrap text-left text-sm text-white">
                 Ação
               </th>
             </tr>
@@ -134,26 +134,26 @@ const handleAction = async (request: IAccessRequest) => {
           <tbody className="divide-y divide-gray-200 bg-[var(--color-box-2)]">
             {isLoading ? (
               <tr>
-                <td className="px-4 py-3 text-center text-gray-500" colSpan={6}>
+                <td className="px-4 py-3 text-center text-[var(--color-text-1)]" colSpan={7}>
                   Carregando Solicitações...
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td className="px-4 py-3 text-center text-red-500" colSpan={6}>
+                <td className="px-4 py-3 text-center text-red-500" colSpan={7}>
                   Erro: {error}
                 </td>
               </tr>
             ) : requests.length === 0 ? (
               <tr>
-                <td className="px-4 py-3 text-center text-gray-700" colSpan={6}>
-                  Nenhuma Solicitação encontrada.
+                <td className="px-4 py-3 text-center text-[var(--color-text-1)]" colSpan={7}>
+                  Nenhuma solicitação encontrada.
                 </td>
               </tr>
             ) : (
               requests.map((request, index) => (
                 <tr key={request.id} className="hover:bg-[var(--color-box-1)]">
-                  <td className="px-4 pt-3 whitespace-nowrap text-sm text-[var(--color-text-1)]">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text-1)]">
                     {index + 1}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text-1)]">
@@ -174,6 +174,8 @@ const handleAction = async (request: IAccessRequest) => {
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text-1)]">
                     <div className="flex gap-4">
                       <button
+                        title="Aceitar acesso"
+                        aria-label="Aceitar acesso"
                         onClick={() => (
                           setSelectedRequest(request),
                           setIsOpen(true),
@@ -185,6 +187,8 @@ const handleAction = async (request: IAccessRequest) => {
                       </button>
 
                       <button
+                        title="Recusar acesso"
+                        aria-label="Recusar acesso"
                         onClick={() => (
                           setSelectedRequest(request),
                           setIsOpen(true),
@@ -208,6 +212,11 @@ const handleAction = async (request: IAccessRequest) => {
           onClose={() => setIsOpen(false)}
           buttons={[
             {
+              label: "Não",
+              onClick: () => setIsOpen(false),
+              className: "bg-red-500 text-white cursor-pointer",
+            },
+            {
               label: "Sim",
               onClick: async () => {
                 if (!selectedRequest) return;
@@ -215,12 +224,7 @@ const handleAction = async (request: IAccessRequest) => {
                 setIsOpen(false);
               },
               className: "bg-transparent cursor-pointer",
-            },
-            {
-              label: "Não",
-              onClick: () => setIsOpen(false),
-              className: "bg-red-500 text-white cursor-pointer",
-            },
+            }
           ]}
         >
           Você tem certeza que deseja {action} o acesso do usuário{" "}
