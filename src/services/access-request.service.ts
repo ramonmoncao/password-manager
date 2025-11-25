@@ -1,6 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
 import { sendEmailById } from "./send-email.service";
-import { createAccess } from "./users-projects.service";
 
 export interface IAccessRequest {
   id: number;
